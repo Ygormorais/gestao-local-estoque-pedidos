@@ -2,6 +2,10 @@
 
 Aplicação web criada para apoiar pequenos empreendedores no controle de produtos e no agendamento de encomendas. O sistema reúne informações de estoque, alerta quando um item precisa de reposição e acompanha prazos de entrega, reduzindo vendas de produtos esgotados e atrasos com clientes.
 
+## Demonstração online
+
+Acesse o sistema publicado em: [ygormorais.github.io/gestao-local-estoque-pedidos](https://ygormorais.github.io/gestao-local-estoque-pedidos/)
+
 ## Funcionalidades
 
 - Painel com totais de produtos, itens a repor, valor do estoque, pedidos atrasados e valor agendado.
