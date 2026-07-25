@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistema simples de controle de estoque e agendamento de pedidos para pequenos empreendedores.">
+  <title>Gestão Local | Estoque e Pedidos</title>
+  <style>
+    :root {
+      --primary: #2f5496;
+      --primary-dark: #1f3b70;
+      --primary-soft: #eaf0fb;
+      --background: #f4f6fa;
+      --surface: #ffffff;
+      --text: #182230;
+      --muted: #64748b;
+      --border: #dfe5ee;
+      --success: #18794e;
+      --success-soft: #e8f7ef;
+      --warning: #9a6700;
+      --warning-soft: #fff4d6;
+      --danger: #b42318;
+      --danger-soft: #feeceb;
+      --shadow: 0 8px 26px rgba(24, 34, 48, 0.08);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--background);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    select {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(47, 84, 150, 0.28);
+      outline-offset: 2px;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+    }
+
+    .header-inner,
+    .page-shell {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 800;
+      box-shadow: 0 6px 16px rgba(47, 84, 150, 0.25);
+    }
+
+    .brand-copy strong,
+    .brand-copy span {
+      display: block;
+    }
+
+    .brand-copy strong {
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-copy span {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 10px;
+      background: #f1f4f8;
+    }
+
+    .main-nav a {
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: #526174;
+      font-size: 0.86rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .main-nav a:hover {
+      background: white;
+      color: var(--primary);
+    }
+
+    .page-shell {
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 32px;
+      margin-bottom: 24px;
+      padding: 30px 34px;
+      border-radius: 20px;
+      background: linear-gradient(125deg, #24477f 0%, #2f5496 60%, #416db5 100%);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -90px;
+      bottom: -150px;
+      border: 44px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.65rem, 3vw, 2.35rem);
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+    }
+
+    .hero-description {
+      max-width: 680px;
+      margin: 10px 0 0;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.95rem;
+    }
+
+    .hero-date {
+      position: relative;
+      z-index: 1;
+      min-width: 176px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .hero-date span,
+    .hero-date strong {
+      display: block;
+    }
+
+    .hero-date span {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .hero-date strong {
+      margin-top: 3px;
+      font-size: 0.95rem;
+      text-transform: capitalize;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .summary-card {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: 0 4px 16px rgba(24, 34, 48, 0.045);
+    }
+
+    .summary-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .summary-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 900;
+    }
+
+    .summary-card.alert .summary-icon {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 750;
+      line-height: 1.25;
+    }
+
+    .summary-value {
+      display: block;
+      overflow: hidden;
+      font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .summary-detail {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .content-section {
+      scroll-margin-top: 92px;
+      margin-top: 22px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 5px 20px rgba(24, 34, 48, 0.05);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 24px 18px;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .section-number {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-weight: 800;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-heading p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .button {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 15px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 750;
+      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 5px 13px rgba(47, 84, 150, 0.22);
+    }
+
+    .button-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .button-secondary {
+      border-color: var(--border);
+      background: white;
+      color: #344256;
+    }
+
+    .button-secondary:hover {
+      background: #f7f9fc;
+    }
+
+    .button-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .button-text {
+      min-height: 34px;
+      padding: 6px 9px;
+      border-color: transparent;
+      background: transparent;
+      color: var(--primary);
+      box-shadow: none;
+      font-size: 0.77rem;
+    }
+
+    .button-text:hover {
+      background: var(--primary-soft);
+      transform: none;
+    }
+
+    .button-text.danger {
+      color: var(--danger);
+    }
+
+    .button-text.danger:hover {
+      background: var(--danger-soft);
+    }
+
+    .button-icon {
+      font-size: 1.1em;
+      line-height: 1;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 24px 16px;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 370px;
+    }
+
+    .search-wrap::before {
+      content: "⌕";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-54%);
+      color: var(--muted);
+      font-size: 1.25rem;
+      pointer-events: none;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      height: 40px;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fbfcfe;
+      color: var(--text);
+    }
+
+    .filter-select {
+      height: 40px;
+      min-width: 170px;
+      padding: 7px 34px 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fbfcfe;
+      color: #435166;
+      font-size: 0.82rem;
+      font-weight: 650;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 18px 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    th {
+      padding: 12px 14px;
+      background: #f8fafc;
+      color: #5d6b7d;
+      font-size: 0.69rem;
+      font-weight: 800;
+      letter-spacing: 0.035em;
+      text-align: left;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px;
+      border-top: 1px solid #edf0f4;
+      color: #344256;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #fbfcff;
+    }
+
+    .code {
+      color: var(--primary);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.75rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .primary-cell {
+      display: block;
+      color: var(--text);
+      font-weight: 750;
+    }
+
+    .secondary-cell {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .quantity {
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .badge-success {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .badge-danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .badge-warning {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      display: none;
+      padding: 42px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state.visible {
+      display: block;
+    }
+
+    .empty-state strong {
+      display: block;
+      margin-bottom: 3px;
+      color: #3e4b5e;
+    }
+
+    .app-footer {
+      padding-top: 28px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-align: center;
+    }
+
+    dialog {
+      width: min(620px, calc(100% - 28px));
+      max-height: calc(100vh - 32px);
+      padding: 0;
+      overflow: auto;
+      border: 0;
+      border-radius: 18px;
+      background: white;
+      color: var(--text);
+      box-shadow: 0 24px 70px rgba(10, 22, 40, 0.26);
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(3px);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 24px 26px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dialog-header h2 {
+      margin: 0;
+      font-size: 1.22rem;
+      letter-spacing: -0.025em;
+    }
+
+    .dialog-header p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .close-button {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      padding: 0;
+      border: 0;
+      border-radius: 9px;
+      background: #f1f4f8;
+      color: #526174;
+      font-size: 1.15rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      padding: 22px 26px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: #354256;
+      font-size: 0.78rem;
+      font-weight: 750;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      height: 43px;
+      padding: 8px 11px;
+      border: 1px solid #cfd7e3;
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--primary);
+    }
+
+    .field input[readonly] {
+      background: #f4f6f9;
+      color: var(--muted);
+    }
+
+    .input-prefix {
+      position: relative;
+    }
+
+    .input-prefix span {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.8rem;
+      pointer-events: none;
+    }
+
+    .input-prefix input {
+      padding-left: 35px;
+    }
+
+    .field-hint {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.69rem;
+    }
+
+    .order-preview {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 13px 15px;
+      border-radius: 11px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 17px 26px 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    .confirm-dialog {
+      width: min(430px, calc(100% - 28px));
+    }
+
+    .confirm-content {
+      padding: 26px 26px 12px;
+    }
+
+    .confirm-content h2 {
+      margin: 0 0 8px;
+      font-size: 1.18rem;
+    }
+
+    .confirm-content p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .toast-region {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 50;
+      display: grid;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 260px;
+      max-width: 380px;
+      padding: 13px 15px;
+      border: 1px solid #cdd7e5;
+      border-left: 4px solid var(--primary);
+      border-radius: 10px;
+      background: white;
+      color: #344256;
+      font-size: 0.82rem;
+      font-weight: 650;
+      box-shadow: var(--shadow);
+      animation: toast-in 220ms ease-out;
+    }
+
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+
+    @keyframes toast-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .header-inner,
+      .page-shell {
+        width: min(100% - 24px, 1180px);
+      }
+
+      .main-nav {
+        display: none;
+      }
+
+      .page-shell {
+        padding-top: 18px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 24px;
+      }
+
+      .hero-date {
+        justify-self: start;
+        min-width: 0;
+        padding: 10px 14px;
+        text-align: left;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-heading,
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .section-heading .button {
+        width: 100%;
+      }
+
+      .search-wrap,
+      .filter-select {
+        width: 100%;
+        max-width: none;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+
+      table,
+      tbody,
+      tr,
+      td {
+        display: block;
+      }
+
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      tbody {
+        padding: 10px 14px 16px;
+      }
+
+      tbody tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 13px 18px;
+        margin-bottom: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        box-shadow: 0 3px 10px rgba(24, 34, 48, 0.04);
+      }
+
+      tbody tr:hover {
+        background: white;
+      }
+
+      td {
+        min-width: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 3px;
+        color: var(--muted);
+        font-size: 0.64rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      td.cell-product,
+      td.cell-client,
+      td.cell-actions {
+        grid-column: 1 / -1;
+      }
+
+      td.cell-actions {
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+      }
+
+      .actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .brand-copy span {
+        display: none;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .summary-card-top {
+        margin: 0;
+      }
+
+      .summary-label {
+        display: none;
+      }
+
+      .summary-detail {
+        margin-top: 1px;
+      }
+
+      .section-heading {
+        padding: 19px 18px 15px;
+      }
+
+      .toolbar {
+        padding: 0 18px 15px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        padding: 19px;
+      }
+
+      .field.full,
+      .order-preview {
+        grid-column: auto;
+      }
+
+      .order-preview {
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .dialog-header,
+      .dialog-footer {
+        padding-left: 19px;
+        padding-right: 19px;
+      }
+
+      .dialog-footer {
+        flex-direction: column-reverse;
+      }
+
+      .dialog-footer .button {
+        width: 100%;
+      }
+
+      tbody tr {
+        grid-template-columns: 1fr;
+      }
+
+      td.cell-product,
+      td.cell-client,
+      td.cell-actions {
+        grid-column: auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="#painel" aria-label="Ir para o painel">
+        <span class="brand-mark" aria-hidden="true">GL</span>
+        <span class="brand-copy">
+          <strong>Gestão Local</strong>
+          <span>Estoque e agendamento</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a href="#painel">Painel</a>
+        <a href="#estoque">Estoque</a>
+        <a href="#pedidos">Pedidos</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-shell" id="painel">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Visão geral do negócio</p>
+        <h1 id="page-title">Seu estoque e suas entregas em ordem.</h1>
+        <p class="hero-description">Acompanhe produtos, reposições e pedidos agendados em um só lugar, com informações simples e atualizadas automaticamente.</p>
+      </div>
+      <div class="hero-date" aria-label="Data de hoje">
+        <span>Hoje</span>
+        <strong id="currentDate">—</strong>
+      </div>
+    </section>
+
+    <section class="summary-grid" aria-label="Resumo geral">
+      <article class="summary-card">
+        <div class="summary-card-top">
+          <span class="summary-icon" aria-hidden="true">#</span>
+          <span class="summary-label">Itens cadastrados</span>
+        </div>
+        <div>
+          <strong class="summary-value" id="totalProducts">0</strong>
+          <span class="summary-detail">produtos no estoque</span>
+        </div>
+      </article>
+      <article class="summary-card alert">
+        <div class="summary-card-top">
+          <span class="summary-icon" aria-hidden="true">!</span>
+          <span class="summary-label">Itens a repor</span>
+        </div>
+        <div>
+          <strong class="summary-value" id="restockCount">0</strong>
+          <span class="summary-detail">no limite mínimo</span>
+        </div>
+      </article>
+      <article class="summary-card">
+        <div class="summary-card-top">
+          <span class="summary-icon" aria-hidden="true">R$</span>
+          <span class="summary-label">Valor em estoque</span>
+        </div>
+        <div>
+          <strong class="summary-value" id="stockValue">R$ 0,00</strong>
+          <span class="summary-detail">quantidade × preço</span>
+        </div>
+      </article>
+      <article class="summary-card alert">
+        <div class="summary-card-top">
+          <span class="summary-icon" aria-hidden="true">!</span>
+          <span class="summary-label">Pedidos atrasados</span>
+        </div>
+        <div>
+          <strong class="summary-value" id="lateOrders">0</strong>
+          <span class="summary-detail">aguardando entrega</span>
+        </div>
+      </article>
+      <article class="summary-card">
+        <div class="summary-card-top">
+          <span class="summary-icon" aria-hidden="true">R$</span>
+          <span class="summary-label">Valor agendado</span>
+        </div>
+        <div>
+          <strong class="summary-value" id="scheduledValue">R$ 0,00</strong>
+          <span class="summary-detail">pedidos não entregues</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-section" id="estoque" aria-labelledby="stock-title">
+      <div class="section-heading">
+        <div class="section-title-wrap">
+          <span class="section-number" aria-hidden="true">1</span>
+          <div>
+            <h2 id="stock-title">Controle de estoque</h2>
+            <p>Produtos disponíveis e alertas de reposição.</p>
+          </div>
+        </div>
+        <button class="button button-primary" type="button" id="openProductDialog">
+          <span class="button-icon" aria-hidden="true">＋</span>
+          Novo produto
+        </button>
+      </div>
+      <div class="toolbar">
+        <label class="search-wrap">
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Buscar no estoque</span>
+          <input id="stockSearch" type="search" placeholder="Buscar produto ou responsável...">
+        </label>
+        <select class="filter-select" id="stockFilter" aria-label="Filtrar estoque por status">
+          <option value="all">Todos os status</option>
+          <option value="ok">Somente OK</option>
+          <option value="repor">Somente a repor</option>
+        </select>
+      </div>
+      <div class="table-wrap" id="stockTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Produto</th>
+              <th>Responsável</th>
+              <th>Categoria</th>
+              <th>Qtd.</th>
+              <th>Mínimo</th>
+              <th>Preço</th>
+              <th>Status</th>
+              <th><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="stockTableBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="stockEmpty">
+        <strong>Nenhum produto encontrado</strong>
+        Ajuste a busca ou cadastre um novo produto.
+      </div>
+    </section>
+
+    <section class="content-section" id="pedidos" aria-labelledby="orders-title">
+      <div class="section-heading">
+        <div class="section-title-wrap">
+          <span class="section-number" aria-hidden="true">2</span>
+          <div>
+            <h2 id="orders-title">Agendamento de pedidos</h2>
+            <p>Entregas previstas, valores e situação de cada pedido.</p>
+          </div>
+        </div>
+        <button class="button button-primary" type="button" id="openOrderDialog">
+          <span class="button-icon" aria-hidden="true">＋</span>
+          Agendar pedido
+        </button>
+      </div>
+      <div class="toolbar">
+        <label class="search-wrap">
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Buscar nos pedidos</span>
+          <input id="orderSearch" type="search" placeholder="Buscar cliente, produto ou código...">
+        </label>
+        <select class="filter-select" id="orderFilter" aria-label="Filtrar pedidos por status">
+          <option value="all">Todos os status</option>
+          <option value="agendado">Agendados</option>
+          <option value="entregue">Entregues</option>
+          <option value="atrasado">Atrasados</option>
+        </select>
+      </div>
+      <div class="table-wrap" id="ordersTableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Cliente</th>
+              <th>Produto</th>
+              <th>Qtd.</th>
+              <th>Data do pedido</th>
+              <th>Entrega prevista</th>
+              <th>Valor total</th>
+              <th>Status</th>
+              <th><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="ordersEmpty">
+        <strong>Nenhum pedido encontrado</strong>
+        Ajuste a busca ou agende um novo pedido.
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      Gestão Local · Dados mantidos apenas durante esta sessão
+    </footer>
+  </main>
+
+  <dialog id="productDialog" aria-labelledby="productDialogTitle">
+    <form id="productForm">
+      <div class="dialog-header">
+        <div>
+          <h2 id="productDialogTitle">Cadastrar novo produto</h2>
+          <p>Preencha os dados para adicionar o item ao estoque.</p>
+        </div>
+        <button class="close-button" type="button" data-close-dialog="productDialog" aria-label="Fechar">×</button>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="productCode">Código</label>
+          <input id="productCode" name="code" type="text" readonly>
+          <p class="field-hint">Gerado automaticamente.</p>
+        </div>
+        <div class="field">
+          <label for="productCategory">Categoria</label>
+          <select id="productCategory" name="category" required>
+            <option value="">Selecione...</option>
+            <option>Artesanato</option>
+            <option>Alimentos</option>
+            <option>Cosméticos</option>
+            <option>Decoração</option>
+            <option>Acessórios</option>
+            <option>Serviços</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="productName">Nome do produto</label>
+          <input id="productName" name="name" type="text" maxlength="80" autocomplete="off" required placeholder="Ex.: Cesta artesanal">
+        </div>
+        <div class="field full">
+          <label for="ownerName">Empreendedor(a) responsável</label>
+          <input id="ownerName" name="owner" type="text" maxlength="80" autocomplete="name" required placeholder="Nome completo">
+        </div>
+        <div class="field">
+          <label for="stockQuantity">Quantidade em estoque</label>
+          <input id="stockQuantity" name="quantity" type="number" min="0" step="1" inputmode="numeric" required placeholder="0">
+        </div>
+        <div class="field">
+          <label for="minimumStock">Estoque mínimo</label>
+          <input id="minimumStock" name="minimum" type="number" min="0" step="1" inputmode="numeric" required placeholder="0">
+        </div>
+        <div class="field full">
+          <label for="unitPrice">Preço unitário</label>
+          <div class="input-prefix">
+            <span>R$</span>
+            <input id="unitPrice" name="price" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0,00">
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="button button-secondary" type="button" data-close-dialog="productDialog">Cancelar</button>
+        <button class="button button-primary" type="submit">Cadastrar produto</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="orderDialog" aria-labelledby="orderDialogTitle">
+    <form id="orderForm">
+      <div class="dialog-header">
+        <div>
+          <h2 id="orderDialogTitle">Agendar novo pedido</h2>
+          <p>Vincule o pedido a um produto cadastrado.</p>
+        </div>
+        <button class="close-button" type="button" data-close-dialog="orderDialog" aria-label="Fechar">×</button>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="orderCode">Código</label>
+          <input id="orderCode" name="code" type="text" readonly>
+          <p class="field-hint">Gerado automaticamente.</p>
+        </div>
+        <div class="field">
+          <label for="orderSituation">Situação inicial</label>
+          <select id="orderSituation" name="delivered" required>
+            <option value="false">Agendado</option>
+            <option value="true">Entregue</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="clientName">Nome do cliente</label>
+          <input id="clientName" name="client" type="text" maxlength="80" autocomplete="name" required placeholder="Nome completo">
+        </div>
+        <div class="field full">
+          <label for="orderProduct">Produto</label>
+          <select id="orderProduct" name="productCode" required></select>
+        </div>
+        <div class="field">
+          <label for="orderQuantity">Quantidade</label>
+          <input id="orderQuantity" name="quantity" type="number" min="1" step="1" inputmode="numeric" required value="1">
+        </div>
+        <div class="field">
+          <label for="orderDate">Data do pedido</label>
+          <input id="orderDate" name="orderDate" type="date" required>
+        </div>
+        <div class="field full">
+          <label for="deliveryDate">Data de entrega prevista</label>
+          <input id="deliveryDate" name="deliveryDate" type="date" required>
+        </div>
+        <div class="order-preview" aria-live="polite">
+          <span id="selectedPrice">Preço unitário: —</span>
+          <span id="orderTotalPreview">Total: R$ 0,00</span>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="button button-secondary" type="button" data-close-dialog="orderDialog">Cancelar</button>
+        <button class="button button-primary" type="submit">Agendar pedido</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
+    <div class="confirm-content">
+      <h2 id="confirmTitle">Confirmar exclusão</h2>
+      <p id="confirmMessage">Deseja remover este item?</p>
+    </div>
+    <div class="dialog-footer">
+      <button class="button button-secondary" type="button" id="cancelConfirm">Cancelar</button>
+      <button class="button button-danger" type="button" id="acceptConfirm">Sim, remover</button>
+    </div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    "use strict";
+
+    const products = [
+      { code: "EST001", name: "Bolsa artesanal de crochê", owner: "Maria Silva", category: "Artesanato", quantity: 12, minimum: 5, price: 45.00 },
+      { code: "EST002", name: "Doce caseiro (caixa 10un)", owner: "Joana Pereira", category: "Alimentos", quantity: 3, minimum: 8, price: 18.50 },
+      { code: "EST003", name: "Sabonete artesanal", owner: "Ana Costa", category: "Cosméticos", quantity: 25, minimum: 10, price: 12.00 },
+      { code: "EST004", name: "Vela aromática", owner: "Ana Costa", category: "Decoração", quantity: 7, minimum: 6, price: 22.00 },
+      { code: "EST005", name: "Bijuteria em resina", owner: "Carla Souza", category: "Acessórios", quantity: 2, minimum: 5, price: 15.00 }
+    ];
+
+    const orders = [
+      { code: "PED001", client: "Fernanda Lima", productCode: "EST001", quantity: 2, orderDate: "2026-08-05", deliveryDate: "2026-08-12", delivered: true },
+      { code: "PED002", client: "Roberto Alves", productCode: "EST002", quantity: 5, orderDate: "2026-08-06", deliveryDate: "2026-08-08", delivered: true },
+      { code: "PED003", client: "Patrícia Nunes", productCode: "EST003", quantity: 10, orderDate: "2026-08-10", deliveryDate: "2026-08-15", delivered: false }
+    ];
+
+    let nextProductNumber = 6;
+    let nextOrderNumber = 4;
+    let pendingConfirmation = null;
+
+    const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+    const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+
+    const longDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long"
+    });
+
+    const byId = (id) => document.getElementById(id);
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function normalizeText(value) {
+      return String(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function localDate(dateString) {
+      const [year, month, day] = dateString.split("-").map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0);
+    }
+
+    function todayAtMidnight() {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    function toInputDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function productStatus(product) {
+      return product.quantity <= product.minimum ? "Repor" : "OK";
+    }
+
+    function orderStatus(order) {
+      if (order.delivered) return "Entregue";
+      return localDate(order.deliveryDate) < todayAtMidnight() ? "Atrasado" : "Agendado";
+    }
+
+    function getProduct(code) {
+      return products.find((product) => product.code === code);
+    }
+
+    function orderValue(order) {
+      const product = getProduct(order.productCode);
+      return product ? order.quantity * product.price : 0;
+    }
+
+    function formatCode(prefix, number) {
+      return `${prefix}${String(number).padStart(3, "0")}`;
+    }
+
+    function renderSummary() {
+      const restock = products.filter((product) => productStatus(product) === "Repor").length;
+      const stockValue = products.reduce((total, product) => total + product.quantity * product.price, 0);
+      const late = orders.filter((order) => orderStatus(order) === "Atrasado").length;
+      const scheduledValue = orders
+        .filter((order) => !order.delivered)
+        .reduce((total, order) => total + orderValue(order), 0);
+
+      byId("totalProducts").textContent = products.length;
+      byId("restockCount").textContent = restock;
+      byId("stockValue").textContent = currencyFormatter.format(stockValue);
+      byId("lateOrders").textContent = late;
+      byId("scheduledValue").textContent = currencyFormatter.format(scheduledValue);
+    }
+
+    function renderProducts() {
+      const query = normalizeText(byId("stockSearch").value);
+      const filter = byId("stockFilter").value;
+      const visibleProducts = products.filter((product) => {
+        const status = normalizeText(productStatus(product));
+        const searchable = normalizeText(`${product.code} ${product.name} ${product.owner} ${product.category}`);
+        return searchable.includes(query) && (filter === "all" || status === filter);
+      });
+
+      byId("stockTableBody").innerHTML = visibleProducts.map((product) => {
+        const status = productStatus(product);
+        const badgeClass = status === "OK" ? "badge-success" : "badge-danger";
+        return `
+          <tr>
+            <td data-label="Código"><span class="code">${escapeHtml(product.code)}</span></td>
+            <td data-label="Produto" class="cell-product"><span class="primary-cell">${escapeHtml(product.name)}</span></td>
+            <td data-label="Responsável">${escapeHtml(product.owner)}</td>
+            <td data-label="Categoria">${escapeHtml(product.category)}</td>
+            <td data-label="Quantidade"><span class="quantity">${product.quantity}</span></td>
+            <td data-label="Mínimo">${product.minimum}</td>
+            <td data-label="Preço">${currencyFormatter.format(product.price)}</td>
+            <td data-label="Status"><span class="badge ${badgeClass}">${status}</span></td>
+            <td data-label="Ações" class="cell-actions">
+              <div class="actions">
+                <button class="button button-text danger" type="button" data-remove-product="${escapeHtml(product.code)}" aria-label="Remover ${escapeHtml(product.name)}">Remover</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      const isEmpty = visibleProducts.length === 0;
+      byId("stockTableWrap").hidden = isEmpty;
+      byId("stockEmpty").classList.toggle("visible", isEmpty);
+    }
+
+    function renderOrders() {
+      const query = normalizeText(byId("orderSearch").value);
+      const filter = byId("orderFilter").value;
+      const visibleOrders = orders.filter((order) => {
+        const product = getProduct(order.productCode);
+        const status = normalizeText(orderStatus(order));
+        const searchable = normalizeText(`${order.code} ${order.client} ${order.productCode} ${product?.name ?? ""}`);
+        return searchable.includes(query) && (filter === "all" || status === filter);
+      });
+
+      byId("ordersTableBody").innerHTML = visibleOrders.map((order) => {
+        const product = getProduct(order.productCode);
+        const status = orderStatus(order);
+        const badgeClass = status === "Entregue"
+          ? "badge-success"
+          : status === "Atrasado"
+            ? "badge-danger"
+            : "badge-warning";
+        const toggleLabel = order.delivered ? "Reabrir" : "Marcar entregue";
+
+        return `
+          <tr>
+            <td data-label="Código"><span class="code">${escapeHtml(order.code)}</span></td>
+            <td data-label="Cliente" class="cell-client"><span class="primary-cell">${escapeHtml(order.client)}</span></td>
+            <td data-label="Produto" class="cell-product">
+              <span class="primary-cell">${escapeHtml(product?.name ?? "Produto removido")}</span>
+              <span class="secondary-cell">${escapeHtml(order.productCode)}</span>
+            </td>
+            <td data-label="Quantidade"><span class="quantity">${order.quantity}</span></td>
+            <td data-label="Data do pedido">${dateFormatter.format(localDate(order.orderDate))}</td>
+            <td data-label="Entrega prevista">${dateFormatter.format(localDate(order.deliveryDate))}</td>
+            <td data-label="Valor total"><strong>${currencyFormatter.format(orderValue(order))}</strong></td>
+            <td data-label="Status"><span class="badge ${badgeClass}">${status}</span></td>
+            <td data-label="Ações" class="cell-actions">
+              <div class="actions">
+                <button class="button button-text" type="button" data-toggle-order="${escapeHtml(order.code)}">${toggleLabel}</button>
+                <button class="button button-text danger" type="button" data-remove-order="${escapeHtml(order.code)}" aria-label="Remover pedido ${escapeHtml(order.code)}">Remover</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      const isEmpty = visibleOrders.length === 0;
+      byId("ordersTableWrap").hidden = isEmpty;
+      byId("ordersEmpty").classList.toggle("visible", isEmpty);
+    }
+
+    function renderProductOptions() {
+      const select = byId("orderProduct");
+      const selected = select.value;
+      select.innerHTML = products.length
+        ? `<option value="">Selecione um produto...</option>${products.map((product) => `
+            <option value="${escapeHtml(product.code)}">${escapeHtml(product.name)} · ${currencyFormatter.format(product.price)}</option>
+          `).join("")}`
+        : `<option value="">Cadastre um produto primeiro</option>`;
+      select.value = products.some((product) => product.code === selected) ? selected : "";
+      select.disabled = products.length === 0;
+      updateOrderPreview();
+    }
+
+    function renderAll() {
+      renderSummary();
+      renderProducts();
+      renderOrders();
+      renderProductOptions();
+    }
+
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast${type === "error" ? " error" : ""}`;
+      toast.textContent = message;
+      byId("toastRegion").appendChild(toast);
+      window.setTimeout(() => toast.remove(), 3600);
+    }
+
+    function openProductDialog() {
+      byId("productForm").reset();
+      byId("productCode").value = formatCode("EST", nextProductNumber);
+      byId("productDialog").showModal();
+      window.setTimeout(() => byId("productCategory").focus(), 0);
+    }
+
+    function openOrderDialog() {
+      if (!products.length) {
+        showToast("Cadastre um produto antes de agendar um pedido.", "error");
+        return;
+      }
+
+      byId("orderForm").reset();
+      byId("orderCode").value = formatCode("PED", nextOrderNumber);
+      const today = new Date();
+      const delivery = new Date(today);
+      delivery.setDate(delivery.getDate() + 7);
+      byId("orderDate").value = toInputDate(today);
+      byId("deliveryDate").value = toInputDate(delivery);
+      renderProductOptions();
+      byId("orderDialog").showModal();
+      window.setTimeout(() => byId("clientName").focus(), 0);
+    }
+
+    function updateOrderPreview() {
+      const product = getProduct(byId("orderProduct").value);
+      const quantity = Math.max(0, Number(byId("orderQuantity").value) || 0);
+      byId("selectedPrice").textContent = product
+        ? `Preço unitário: ${currencyFormatter.format(product.price)}`
+        : "Preço unitário: —";
+      byId("orderTotalPreview").textContent = `Total: ${currencyFormatter.format(product ? product.price * quantity : 0)}`;
+    }
+
+    function requestConfirmation(message, callback) {
+      byId("confirmMessage").textContent = message;
+      pendingConfirmation = callback;
+      byId("confirmDialog").showModal();
+      window.setTimeout(() => byId("cancelConfirm").focus(), 0);
+    }
+
+    byId("productForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      products.push({
+        code: formatCode("EST", nextProductNumber),
+        name: form.get("name").trim(),
+        owner: form.get("owner").trim(),
+        category: form.get("category"),
+        quantity: Number(form.get("quantity")),
+        minimum: Number(form.get("minimum")),
+        price: Number(form.get("price"))
+      });
+      nextProductNumber += 1;
+      byId("productDialog").close();
+      renderAll();
+      showToast("Produto cadastrado com sucesso.");
+    });
+
+    byId("orderForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const orderDate = form.get("orderDate");
+      const deliveryDate = form.get("deliveryDate");
+
+      if (localDate(deliveryDate) < localDate(orderDate)) {
+        showToast("A entrega não pode ser anterior à data do pedido.", "error");
+        byId("deliveryDate").focus();
+        return;
+      }
+
+      orders.push({
+        code: formatCode("PED", nextOrderNumber),
+        client: form.get("client").trim(),
+        productCode: form.get("productCode"),
+        quantity: Number(form.get("quantity")),
+        orderDate,
+        deliveryDate,
+        delivered: form.get("delivered") === "true"
+      });
+      nextOrderNumber += 1;
+      byId("orderDialog").close();
+      renderAll();
+      showToast("Pedido agendado com sucesso.");
+    });
+
+    byId("stockTableBody").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-remove-product]");
+      if (!button) return;
+      const code = button.dataset.removeProduct;
+      const product = getProduct(code);
+      const linkedOrders = orders.some((order) => order.productCode === code);
+
+      if (linkedOrders) {
+        showToast("Este produto possui pedidos vinculados. Remova esses pedidos primeiro.", "error");
+        return;
+      }
+
+      requestConfirmation(`Deseja remover “${product.name}” do estoque?`, () => {
+        const index = products.findIndex((item) => item.code === code);
+        if (index >= 0) products.splice(index, 1);
+        renderAll();
+        showToast("Produto removido.");
+      });
+    });
+
+    byId("ordersTableBody").addEventListener("click", (event) => {
+      const toggleButton = event.target.closest("[data-toggle-order]");
+      if (toggleButton) {
+        const order = orders.find((item) => item.code === toggleButton.dataset.toggleOrder);
+        if (!order) return;
+        order.delivered = !order.delivered;
+        renderAll();
+        showToast(order.delivered ? "Pedido marcado como entregue." : "Pedido reaberto como agendado.");
+        return;
+      }
+
+      const removeButton = event.target.closest("[data-remove-order]");
+      if (!removeButton) return;
+      const code = removeButton.dataset.removeOrder;
+      requestConfirmation(`Deseja remover o pedido ${code}?`, () => {
+        const index = orders.findIndex((item) => item.code === code);
+        if (index >= 0) orders.splice(index, 1);
+        renderAll();
+        showToast("Pedido removido.");
+      });
+    });
+
+    byId("openProductDialog").addEventListener("click", openProductDialog);
+    byId("openOrderDialog").addEventListener("click", openOrderDialog);
+    byId("stockSearch").addEventListener("input", renderProducts);
+    byId("stockFilter").addEventListener("change", renderProducts);
+    byId("orderSearch").addEventListener("input", renderOrders);
+    byId("orderFilter").addEventListener("change", renderOrders);
+    byId("orderProduct").addEventListener("change", updateOrderPreview);
+    byId("orderQuantity").addEventListener("input", updateOrderPreview);
+
+    document.querySelectorAll("[data-close-dialog]").forEach((button) => {
+      button.addEventListener("click", () => byId(button.dataset.closeDialog).close());
+    });
+
+    document.querySelectorAll("dialog").forEach((dialog) => {
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+    });
+
+    byId("cancelConfirm").addEventListener("click", () => {
+      pendingConfirmation = null;
+      byId("confirmDialog").close();
+    });
+
+    byId("acceptConfirm").addEventListener("click", () => {
+      const action = pendingConfirmation;
+      pendingConfirmation = null;
+      byId("confirmDialog").close();
+      if (action) action();
+    });
+
+    byId("currentDate").textContent = longDateFormatter.format(new Date());
+    renderAll();
+  </script>
+</body>
+</html>
